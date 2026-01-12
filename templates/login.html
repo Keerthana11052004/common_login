@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Common Login System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .login-header {
+            background: #4e73df;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .login-body {
+            padding: 30px;
+        }
+        .form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        .btn-primary {
+            background: #4e73df;
+            border-color: #4e73df;
+        }
+        .btn-primary:hover {
+            background: #2e59d9;
+            border-color: #2e59d9;
+        }
+        .alert-custom {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            z-index: 9999;
+        }
+        .password-toggle {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="login-container">
+                    <!-- Login Form -->
+                    <div class="login-card" id="loginForm">
+                        <div class="login-header">
+                            <h4><i class="fas fa-lock me-2"></i>Common Login System</h4>
+                            <p class="mb-0">Employee Authentication Portal</p>
+                        </div>
+                        <div class="login-body">
+                            <form id="loginFormElement" method="POST" action="/api/login">
+                                <div class="mb-3">
+                                    <label for="identifier" class="form-label">Employee ID or Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="identifier" name="identifier" placeholder="Enter Employee ID or Email" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" required>
+                                        <button class="btn btn-outline-secondary password-toggle" type="button" id="togglePassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid mb-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </button>
+                                </div>
+                                
+                                <div id="notificationArea"></div>
+                                
+                                <div class="text-center">
+                                    <a href="#" id="showSignup" class="text-decoration-none">
+                                        <i class="fas fa-user-plus me-1"></i>Create New Account
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Signup Form (Initially Hidden) -->
+                    <div class="login-card" id="signupForm" style="display: none;">
+                        <div class="login-header">
+                            <h4><i class="fas fa-user-plus me-2"></i>Sign Up</h4>
+                            <p class="mb-0">Create New Account</p>
+                        </div>
+                        <div class="login-body">
+                            <form id="signupFormElement">
+                                <div class="mb-3">
+                                    <label for="signupEmpId" class="form-label">Employee ID</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-id-badge"></i></span>
+                                        <input type="text" class="form-control" id="signupEmpId" name="empId" placeholder="Enter Employee ID" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="title" class="form-label">Title</label>
+                                        <select class="form-select" id="title" name="title" required>
+                                            <option value="">Select Title</option>
+                                            <option value="Mr">Mr</option>
+                                            <option value="Mrs">Mrs</option>
+                                            <option value="Ms">Ms</option>
+                                            <option value="Miss">Miss</option>
+                                            <option value="Dr">Dr</option>
+                                            <option value="Prof">Prof</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input type="text" class="form-control" id="firstName" name="firstName" placeholder="First Name" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            <input type="text" class="form-control" id="lastName" name="lastName" placeholder="Last Name" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="signupEmail" class="form-label">Email</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">@</span>
+                                        <input type="email" class="form-control" id="signupEmail" name="email" placeholder="name@violintec.com" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="signupPassword" class="form-label">Password</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                        <input type="password" class="form-control" id="signupPassword" name="password" placeholder="Create Password" required>
+                                    </div>
+                                    <div id="passwordHelp" class="form-text">Password must meet the following requirements:</div>
+                                </div>
+                                
+                                <!-- Password Policy Requirements -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-shield-alt me-1"></i>Password Policy</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <div class="form-check" onclick="event.preventDefault(); event.stopPropagation(); return false;">
+                                                <input class="form-check-input" type="checkbox" id="policy1" required disabled readonly style="pointer-events: none;">
+                                                <label class="form-check-label" for="policy1" style="pointer-events: none; user-select: none; cursor: default;">At least 8 characters long</label>
+                                            </div>
+                                            <div class="form-check" onclick="event.preventDefault(); event.stopPropagation(); return false;">
+                                                <input class="form-check-input" type="checkbox" id="policy2" required disabled readonly style="pointer-events: none;">
+                                                <label class="form-check-label" for="policy2" style="pointer-events: none; user-select: none; cursor: default;">Contains uppercase letter (A-Z)</label>
+                                            </div>
+                                            <div class="form-check" onclick="event.preventDefault(); event.stopPropagation(); return false;">
+                                                <input class="form-check-input" type="checkbox" id="policy3" required disabled readonly style="pointer-events: none;">
+                                                <label class="form-check-label" for="policy3" style="pointer-events: none; user-select: none; cursor: default;">Contains lowercase letter (a-z)</label>
+                                            </div>
+                                            <div class="form-check" onclick="event.preventDefault(); event.stopPropagation(); return false;">
+                                                <input class="form-check-input" type="checkbox" id="policy4" required disabled readonly style="pointer-events: none;">
+                                                <label class="form-check-label" for="policy4" style="pointer-events: none; user-select: none; cursor: default;">Contains number (0-9)</label>
+                                            </div>
+                                            <div class="form-check" onclick="event.preventDefault(); event.stopPropagation(); return false;">
+                                                <input class="form-check-input" type="checkbox" id="policy5" required disabled readonly style="pointer-events: none;">
+                                                <label class="form-check-label" for="policy5" style="pointer-events: none; user-select: none; cursor: default;">Contains special character (!@#$%^&*)</label>
+                                            </div>
+                                            <div class="form-check" onclick="event.preventDefault(); event.stopPropagation(); return false;">
+                                                <input class="form-check-input" type="checkbox" id="policy6" required disabled readonly style="pointer-events: none;">
+                                                <label class="form-check-label" for="policy6" style="pointer-events: none; user-select: none; cursor: default;">Does not contain common passwords (admin, password, etc.)</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- App Access Section -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Project Access</label>
+                                    <div id="accessContainer">
+                                        <div class="access-row d-flex gap-2 mb-2">
+                                            <div class="flex-grow-1">
+                                                <select class="form-select project-select" name="projectCodes[]" required>
+                                                    <option value="">Select Project</option>
+                                                    <!-- Options will be populated dynamically -->
+                                                </select>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <select class="form-select access-type-select" name="authTypes[]" required>
+                                                    <option value="">Select Access Type</option>
+                                                    <option value="user">User</option>
+                                                    <option value="admin">Admin</option>
+                                                    <option value="super_admin">Super Admin</option>
+                                                </select>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-secondary btn-add-access" onclick="addAccessRow(this)">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-1">
+                                        <small class="text-muted">Add projects and access types for this user</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid mb-3">
+                                    <button type="submit" class="btn btn-success" id="signupBtn" disabled>
+                                        <i class="fas fa-user-plus me-2"></i>Sign Up
+                                    </button>
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">All password policies must be satisfied to enable signup</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <a href="#" id="showLogin" class="text-decoration-none">
+                                        <i class="fas fa-sign-in-alt me-1"></i>Back to Login
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        // Show signup form
+        document.getElementById('showSignup').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+        });
+
+        // Show login form
+        document.getElementById('showLogin').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        });
+
+        // Password validation functions
+        function validatePassword(password) {
+            const checks = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /\d/.test(password),
+                special: /[!@#$%^&*]/.test(password),
+                common: !/(admin|password)/i.test(password)
+            };
+            
+            return checks;
+        }
+
+        // Update password policy checkboxes
+        document.getElementById('signupPassword').addEventListener('input', function() {
+            const password = this.value;
+            const checks = validatePassword(password);
+            
+            document.getElementById('policy1').checked = checks.length;
+            document.getElementById('policy2').checked = checks.uppercase;
+            document.getElementById('policy3').checked = checks.lowercase;
+            document.getElementById('policy4').checked = checks.number;
+            document.getElementById('policy5').checked = checks.special;
+            document.getElementById('policy6').checked = checks.common;
+            
+            // Enable/disable signup button based on all policies being met
+            const allChecked = Object.values(checks).every(check => check);
+            document.getElementById('signupBtn').disabled = !allChecked;
+        });
+
+        // Handle form submission
+        document.getElementById('signupFormElement').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                empId: formData.get('empId'),
+                title: formData.get('title'),
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                email: formData.get('email'),
+                password: formData.get('password'),
+                department: formData.get('department') || 'General',
+                projectCodes: Array.from(formData.getAll('projectCodes[]')),
+                authTypes: Array.from(formData.getAll('authTypes[]'))
+            };
+            
+            // Filter out empty selections
+            const filteredProjectCodes = data.projectCodes.filter(code => code !== '');
+            const filteredAuthTypes = data.authTypes.filter(type => type !== '');
+            
+            // Ensure project codes and auth types arrays match
+            const validPairs = [];
+            for (let i = 0; i < Math.min(filteredProjectCodes.length, filteredAuthTypes.length); i++) {
+                if (filteredProjectCodes[i] && filteredAuthTypes[i]) {
+                    validPairs.push({
+                        projectCode: filteredProjectCodes[i],
+                        authType: filteredAuthTypes[i]
+                    });
+                }
+            }
+            
+            // Prepare final data
+            const finalData = {
+                empId: data.empId,
+                title: data.title,
+                firstName: data.firstName,
+                lastName: data.lastName,
+                email: data.email,
+                password: data.password,
+                department: data.department,
+                access: validPairs
+            };
+            
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(finalData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification(document.getElementById('notificationArea'), 'Account created successfully! You can now login.', 'success');
+                    
+                    // Clear form
+                    this.reset();
+                    
+                    // Redirect to login
+                    setTimeout(() => {
+                        document.getElementById('signupForm').style.display = 'none';
+                        document.getElementById('loginForm').style.display = 'block';
+                    }, 1500);
+                } else {
+                    showNotification(document.getElementById('notificationArea'), result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Signup error:', error);
+                showNotification(document.getElementById('notificationArea'), 'Signup error: ' + error.message, 'danger');
+            }
+        });
+
+        // Handle login form submission
+        document.getElementById('loginFormElement').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                identifier: formData.get('identifier'),
+                password: formData.get('password')
+            };
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    showNotification(document.getElementById('notificationArea'), 'Login successful! Redirecting...', 'success');
+                    
+                    // Store user data in sessionStorage
+                    sessionStorage.setItem('userData', JSON.stringify(result.data));
+                    
+                    // Redirect to landing page
+                    setTimeout(() => {
+                        window.location.href = '/landing';
+                    }, 1500);
+                } else if (result.status === 'inactive') {
+                    showNotification(document.getElementById('notificationArea'), 'Access denied: Your employment has ended. Contact HR for assistance.', 'danger');
+                } else {
+                    showNotification(document.getElementById('notificationArea'), result.message, 'danger');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showNotification(document.getElementById('notificationArea'), 'Login error: ' + error.message, 'danger');
+            }
+        });
+
+        // Helper function to show notifications
+        function showNotification(container, message, type) {
+            // Create notification element
+            const notificationEl = document.createElement('div');
+            notificationEl.className = `alert alert-${type} alert-dismissible fade show alert-custom position-fixed`;
+            notificationEl.style.cssText = 'top: 20px; right: 20px; min-width: 300px; z-index: 9999;';
+            notificationEl.setAttribute('role', 'alert');
+            
+            notificationEl.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            // Add to body
+            document.body.appendChild(notificationEl);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notificationEl.parentNode) {
+                    notificationEl.remove();
+                }
+            }, 5000);
+            
+            // Also add to the notification area for compatibility
+            container.innerHTML = '';
+        }
+
+        // Real-time email validation
+        document.getElementById('signupEmail').addEventListener('input', function() {
+            const email = this.value;
+            const emailPattern = /^[^\s@]+@violintec\.com$/;
+            
+            if (email && !emailPattern.test(email)) {
+                this.setCustomValidity('Email must be from @violintec.com domain');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        // Function to add more access rows
+        function addAccessRow(button) {
+            const container = document.getElementById('accessContainer');
+            const newRow = document.createElement('div');
+            newRow.className = 'access-row d-flex gap-2 mb-2';
+            newRow.innerHTML = `
+                <div class="flex-grow-1">
+                    <select class="form-select project-select" name="projectCodes[]" required>
+                        <option value="">Select Project</option>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="flex-grow-1">
+                    <select class="form-select access-type-select" name="authTypes[]" required>
+                        <option value="">Select Access Type</option>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="super_admin">Super Admin</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-outline-danger btn-remove-access" onclick="removeAccessRow(this)">
+                    <i class="fas fa-minus"></i>
+                </button>
+            `;
+            container.appendChild(newRow);
+            
+            // Load projects into the new select
+            loadProjectsIntoSelect(newRow.querySelector('.project-select'));
+        }
+
+        // Function to remove access row
+        function removeAccessRow(button) {
+            const row = button.closest('.access-row');
+            if (document.querySelectorAll('.access-row').length > 1) {
+                row.remove();
+            }
+        }
+
+        // Load projects into select elements
+        function loadProjectsIntoSelect(selectElement) {
+            fetch('/api/projects')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Clear existing options except the first one
+                        selectElement.innerHTML = '<option value="">Select Project</option>';
+                        
+                        data.projects.forEach(project => {
+                            const option = document.createElement('option');
+                            option.value = project.project_code;
+                            option.textContent = project.project_name;
+                            selectElement.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading projects:', error);
+                });
+        }
+
+        // Load projects into all existing selects when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            const projectSelects = document.querySelectorAll('.project-select');
+            projectSelects.forEach(select => {
+                loadProjectsIntoSelect(select);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Access Management</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .header {
+            background: #4e73df;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 20px;
+        }
+        .form-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header text-center mb-4">
+            <h3><i class="fas fa-key me-2"></i>App Access Management</h3>
+            <p class="mb-0">Manage Employee Project Access Permissions</p>
+        </div>
+        
+        <div class="form-card">
+            <form id="accessForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="employeeId" class="form-label">Employee ID</label>
+                        <input type="text" class="form-control" id="employeeId" name="employeeId" placeholder="Enter Employee ID" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="project" class="form-label">Project</label>
+                        <select class="form-select" id="project" name="project" required>
+                            <option value="">Select Project</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label for="accessType" class="form-label">Access Type</label>
+                    <select class="form-select" id="accessType" name="accessType" required>
+                        <option value="">Select Access Type</option>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                        <option value="super_admin">Super Admin</option>
+                    </select>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="btn btn-secondary me-md-2" id="searchBtn">
+                        <i class="fas fa-search me-1"></i>Search Access
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="updateBtn">
+                        <i class="fas fa-save me-1"></i>Update Access
+                    </button>
+                    <button type="button" class="btn btn-danger" id="removeBtn">
+                        <i class="fas fa-trash me-1"></i>Remove Access
+                    </button>
+                </div>
+            </form>
+            
+            <div id="resultsSection" class="mt-4" style="display: none;">
+                <h5>Current Access Permissions</h5>
+                <div id="currentAccess"></div>
+            </div>
+        </div>
+        
+        <div id="notificationArea" class="mt-3"></div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Load projects into the project dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProjects();
+        });
+        
+        function loadProjects() {
+            fetch('/api/projects')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const projectSelect = document.getElementById('project');
+                        // Clear existing options except the first one
+                        projectSelect.innerHTML = '<option value="">Select Project</option>';
+                        
+                        data.projects.forEach(project => {
+                            const option = document.createElement('option');
+                            option.value = project.project_code;
+                            option.textContent = `${project.project_name} (${project.project_code})`;
+                            projectSelect.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading projects:', error);
+                    showNotification('Error loading projects', 'danger');
+                });
+        }
+        
+        // Search for existing access
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const empId = document.getElementById('employeeId').value;
+            const projectCode = document.getElementById('project').value;
+            
+            if (!empId || !projectCode) {
+                showNotification('Please enter both Employee ID and select a Project', 'warning');
+                return;
+            }
+            
+            fetch(`/api/access/${empId}/${projectCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        displayCurrentAccess(data.access);
+                    } else {
+                        document.getElementById('resultsSection').style.display = 'none';
+                        showNotification(data.message || 'No existing access found for this employee and project', 'info');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error searching access:', error);
+                    showNotification('Error searching access', 'danger');
+                });
+        });
+        
+        // Display current access
+        function displayCurrentAccess(access) {
+            const container = document.getElementById('currentAccess');
+            const resultsSection = document.getElementById('resultsSection');
+            
+            if (access) {
+                resultsSection.style.display = 'block';
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-user me-2"></i>Current Access Details</h6>
+                        <p class="mb-1"><strong>Employee ID:</strong> ${access.employee_id}</p>
+                        <p class="mb-1"><strong>Project:</strong> ${access.project_name || access.project_code}</p>
+                        <p class="mb-1"><strong>Access Type:</strong> ${access.auth_type}</p>
+                        <p class="mb-1"><strong>Status:</strong> ${access.status == 1 ? 'Active' : 'Inactive'}</p>
+                        <p class="mb-0"><strong>Last Updated:</strong> ${access.created_at || 'N/A'}</p>
+                    </div>
+                `;
+            } else {
+                resultsSection.style.display = 'none';
+                showNotification('No existing access found for this employee and project', 'info');
+            }
+        }
+        
+        // Update access
+        document.getElementById('accessForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const empId = formData.get('employeeId');
+            const projectCode = formData.get('project');
+            const accessType = formData.get('accessType');
+            
+            if (!empId || !projectCode || !accessType) {
+                showNotification('Please fill in all required fields', 'warning');
+                return;
+            }
+            
+            // Update or create access
+            fetch('/api/access', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    employee_id: empId,
+                    project_code: projectCode,
+                    auth_type: accessType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message || 'Access updated successfully', 'success');
+                    // Refresh the current access display
+                    document.getElementById('searchBtn').click();
+                } else {
+                    showNotification(data.message || 'Error updating access', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating access:', error);
+                showNotification('Error updating access', 'danger');
+            });
+        });
+        
+        // Remove access
+        document.getElementById('removeBtn').addEventListener('click', function() {
+            const empId = document.getElementById('employeeId').value;
+            const projectCode = document.getElementById('project').value;
+            
+            if (!empId || !projectCode) {
+                showNotification('Please enter Employee ID and select a Project', 'warning');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to remove this access? This action cannot be undone.')) {
+                fetch(`/api/access/${empId}/${projectCode}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification(data.message || 'Access removed successfully', 'success');
+                        document.getElementById('resultsSection').style.display = 'none';
+                        document.getElementById('accessForm').reset();
+                    } else {
+                        showNotification(data.message || 'Error removing access', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing access:', error);
+                    showNotification('Error removing access', 'danger');
+                });
+            }
+        });
+        
+        // Helper function to show notifications
+        function showNotification(message, type) {
+            const notificationEl = document.createElement('div');
+            notificationEl.className = `alert alert-${type} alert-dismissible fade show`;
+            notificationEl.setAttribute('role', 'alert');
+            
+            notificationEl.innerHTML = `
+                <i class="fas fa-exclamation-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            const notificationArea = document.getElementById('notificationArea');
+            notificationArea.innerHTML = '';
+            notificationArea.appendChild(notificationEl);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notificationEl.parentNode) {
+                    notificationEl.remove();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
